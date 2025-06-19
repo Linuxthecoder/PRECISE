@@ -64,36 +64,38 @@ app.get('/health', (req, res) => {
 // Apply rate limiting to subscription endpoint
 app.use('/subscribe', limiter);
 
-// Subscription endpoint
-app.post('/subscribe',
-    body('email').isEmail().normalizeEmail(),
-    async (req, res, next) => {
-        try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                throw new AppError('Invalid email address', 400);
-            }
-
-            const { email } = req.body;
-
-            // Check if email already exists
-            const existingSubscription = await Subscription.findOne({ email });
-            if (existingSubscription) {
-                throw new AppError('Email already subscribed', 400);
-            }
-
-            // Save new subscription
-            await Subscription.create({ email });
-
-            res.status(201).json({
-                status: 'success',
-                message: 'Successfully subscribed!'
+// Root endpoint
+app.post('/', async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email || !email.includes('@')) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Invalid email address'
             });
-        } catch (error) {
-            next(error);
         }
+
+        // Check if email already exists
+        const existingSubscription = await Subscription.findOne({ email });
+        if (existingSubscription) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Email already subscribed'
+            });
+        }
+
+        // Save new subscription
+        await Subscription.create({ email });
+
+        res.status(201).json({
+            status: 'success',
+            message: 'Successfully subscribed!'
+        });
+    } catch (error) {
+        next(error);
     }
-);
+});
 
 // Error handling middleware
 app.use(errorHandler);
