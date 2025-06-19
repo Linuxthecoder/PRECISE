@@ -9,7 +9,7 @@ const app = express();
 
 // Enable CORS for specific origins
 app.use(cors({
-    origin: ['https://www.preciseksa.co', 'https://preciseksa.co', 'http://localhost:3000'],
+    origin: ['https://www.preciseksa.co', 'https://preciseksa.co', 'http://localhost:3000', 'https://ksa-77f3.onrender.com'],
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Accept'],
     credentials: false // Set to true if you need to handle cookies or auth headers
