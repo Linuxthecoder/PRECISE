@@ -11,7 +11,7 @@ const app = express();
 // Enable CORS for your static site domain
 app.use(cors({
     origin: ['https://preciseksa.co', 'http://localhost:3000', 'https://ksa-77f3.onrender.com'],
-    methods: ['POST'],
+    methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'Accept']
 }));
 
@@ -22,7 +22,6 @@ const limiter = rateLimit({
 });
 
 app.use(express.json());
-app.use('/', limiter); // Apply rate limiting to root path
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI, {
@@ -49,13 +48,24 @@ const subscriptionSchema = new mongoose.Schema({
 
 const Subscription = mongoose.model('Subscription', subscriptionSchema);
 
+// Root GET endpoint - just to show the API is working
+app.get('/', (req, res) => {
+    res.status(200).json({
+        status: 'success',
+        message: 'Precise KSA API is running'
+    });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'healthy' });
 });
 
-// Subscription endpoint at root path
-app.post('/',
+// Apply rate limiting to subscription endpoint
+app.use('/subscribe', limiter);
+
+// Subscription endpoint
+app.post('/subscribe',
     body('email').isEmail().normalizeEmail(),
     async (req, res, next) => {
         try {
